@@ -3,7 +3,6 @@
 
 #include "BaseGameAbility.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemBlueprintLibrary.h"
 #include "LuinCharacterBase.h"
 
 ALuinCharacterBase* UBaseGameAbility::GetCharacterBase() const
@@ -20,50 +19,22 @@ ALuinCharacterBase* UBaseGameAbility::GetCharacterBase() const
 	return nullptr;
 }
 
-void UBaseGameAbility::ApplyGameplayEffectToTarget(TArray<AActor*> Targets, TSubclassOf<UGameplayEffect> GameplayEffectClass, float level)
+// 자기 자신에게 GE를 적용할 때 사용될 함수.
+// 범용성이 높으므로 Base에 배치
+FActiveGameplayEffectHandle UBaseGameAbility::ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float level)
 {
-	// 피격 대상이 있었는지, GE가 존재하는지
-	if (Targets.Num() == 0 || !GameplayEffectClass)	return;
+	if (!GameplayEffectClass)	return FActiveGameplayEffectHandle();
 
-	// GA를 호출한 대상의 ASC
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-	if (!ASC)	return;
+	if (!ASC)	return FActiveGameplayEffectHandle();
 
-	// GE 생성을 위한 EffectContext 생성
 	FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
 	EffectContext.AddSourceObject(this);
 
-	// GE 적용을 위한 Spec 생성
 	FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(GameplayEffectClass, level, EffectContext);
-
 	if (SpecHandle.IsValid()) {
-		for (AActor* TargetActor : Targets) {
-			// 피격당한 대상의 ASC를 가져온다.
-			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
-
-			if (TargetASC) {
-				// 대상에게 Spec Handle을 토대로 GE 적용
-				ASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
-				// 넉백
-				LaunchTarget(TargetActor);
-			}
-		}
+		return ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 	}
-}
 
-void UBaseGameAbility::LaunchTarget(AActor* Target)
-{
-	if (!Target)	return;
-
-	ACharacter* TargetCharacter = Cast<ACharacter>(Target);
-	if (TargetCharacter && GetCharacterBase()) {
-		FVector Dir = TargetCharacter->GetActorLocation() - GetCharacterBase()->GetActorLocation();
-
-		Dir.Z = 0.0f;
-		Dir.Normalize();
-
-		FVector LaunchVelocity = (Dir * 500.0f) + FVector(0.0f, 0.0f, 300.0f);
-
-		TargetCharacter->LaunchCharacter(LaunchVelocity, true, true);
-	}
+	return FActiveGameplayEffectHandle();
 }

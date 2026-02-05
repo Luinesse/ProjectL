@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseGameAbility.h"
+#include "AttackAbility.h"
 #include "ComboAttack.generated.h"
 
 /**
- * 
+ AttackAbility 로 공격 부분을 분할하였으므로, 부모 클래스 변경
  */
 UCLASS()
-class PROJECTL_API UComboAttack : public UBaseGameAbility
+class PROJECTL_API UComboAttack : public UAttackAbility
 {
 	GENERATED_BODY()
 public:

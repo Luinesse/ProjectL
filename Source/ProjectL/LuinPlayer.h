@@ -20,6 +20,8 @@ class USpringArmComponent;
 class UCameraComponent;
 // 모션 워핑
 class UMotionWarpingComponent;
+// UI
+class ULuinHUDWidget;
 
 UCLASS()
 class PROJECTL_API ALuinPlayer : public ALuinCharacterBase
@@ -72,6 +74,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComp;
+
+	// UI
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<ULuinHUDWidget> HUDWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<ULuinHUDWidget> HUDWidget;
 
 	// 수동 락온
 	void ToggleLockOn();

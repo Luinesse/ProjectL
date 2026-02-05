@@ -11,6 +11,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MotionWarpingComponent.h"
+#include "LuinHUDWidget.h"
 
 ALuinPlayer::ALuinPlayer()
 {
@@ -55,6 +56,14 @@ void ALuinPlayer::BeginPlay()
 			if (DefaultMappingContext) {
 				Subsystem->AddMappingContext(DefaultMappingContext, 0);
 			}
+		}
+	}
+
+	if (IsLocallyControlled() && HUDWidgetClass) {
+		HUDWidget = CreateWidget<ULuinHUDWidget>(GetWorld(), HUDWidgetClass);
+		if (HUDWidget) {
+			HUDWidget->AddToViewport();
+			HUDWidget->BindToAttribte(AbilitySystemComponent);
 		}
 	}
 }
@@ -206,14 +215,21 @@ void ALuinPlayer::Input_Look(const FInputActionValue& Value)
 	}
 }
 
+// 스프린트 시작 및 종료 시 Sprint INputID 를 사용하는 GA 실행
 void ALuinPlayer::SprintStart()
 {
-	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+	if (AbilitySystemComponent) {
+		AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(ELuinAbilityInputID::Sprint));
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+	}
 }
 
 void ALuinPlayer::SprintStop()
 {
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	if (AbilitySystemComponent) {
+		AbilitySystemComponent->AbilityLocalInputReleased(static_cast<int32>(ELuinAbilityInputID::Sprint));
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	}
 }
 
 AActor* ALuinPlayer::FindLockOnTarget(float SearchRange)

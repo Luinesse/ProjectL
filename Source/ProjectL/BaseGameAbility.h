@@ -9,7 +9,7 @@
 class ALuinCharacterBase;
 
 /**
- * 
+ 기존 공격 함수들은 AttackAbility 로 분할.
  */
 UCLASS()
 class PROJECTL_API UBaseGameAbility : public UGameplayAbility
@@ -20,10 +20,6 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player")
 	ALuinCharacterBase* GetCharacterBase() const;
 
-	// GE 적용.
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void ApplyGameplayEffectToTarget(TArray<AActor*> Targets, TSubclassOf<UGameplayEffect> GameplayEffectClass, float level = 1);
-
-	// 넉백
-	void LaunchTarget(AActor* Target);
+	FActiveGameplayEffectHandle ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float level = 1.0f);
 };

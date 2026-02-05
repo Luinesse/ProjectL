@@ -21,7 +21,20 @@ enum class ELuinAbilityInputID : uint8 {
 	None,
 	Confirm,
 	Cancel,
-	Attack
+	Attack,
+	Sprint
+};
+
+// GA가 어떤 타입인지 확인하기 위한 구조체
+USTRUCT(BlueprintType)
+struct FStartingAbilityInfo {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UGameplayAbility> AbilityClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ELuinAbilityInputID InputID = ELuinAbilityInputID::None;
 };
 
 UCLASS()
@@ -46,8 +59,9 @@ protected:
 	TObjectPtr<ULuinAttributeSet> AttributeSet;
 
 	// GA 배열
+	// GA와 GA 타입을 담는 구조체로 변경(26.02.05)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
+	TArray<FStartingAbilityInfo> DefaultAbilities;
 
 	// GE를 담음. (GE 테스트용으로 사용했음. 불필요)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")

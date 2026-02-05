@@ -74,10 +74,11 @@ void ALuinCharacterBase::BeginPlay()
 		// 멀티플레이 환경에선 서버 권한이 있을 때만 부여.
 		if (HasAuthority()) {
 			// DefaultAbilities 에 담아둔 GA를 가져옴.
-			for (const TSubclassOf<UGameplayAbility>& AbilityClass : DefaultAbilities) {
-				if (AbilityClass) {
+			// DefaultAbilities 는 이제 구조체를 담음(GA와 GA타입)
+			for (const FStartingAbilityInfo& AbilityInfo : DefaultAbilities) {
+				if (AbilityInfo.AbilityClass) {
 					// GA의 스펙을 결정. 레벨 1 수준으로 GAS는 이를 Attack으로 식별(enum class)
-					FGameplayAbilitySpec Spec(AbilityClass, 1, static_cast<int32>(ELuinAbilityInputID::Attack), this);
+					FGameplayAbilitySpec Spec(AbilityInfo.AbilityClass, 1, static_cast<int32>(AbilityInfo.InputID), this);
 					AbilitySystemComponent->GiveAbility(Spec);
 				}
 			}
