@@ -12,6 +12,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MotionWarpingComponent.h"
 #include "LuinHUDWidget.h"
+#include "LuinAttributeSet.h"
 
 ALuinPlayer::ALuinPlayer()
 {
@@ -59,12 +60,19 @@ void ALuinPlayer::BeginPlay()
 		}
 	}
 
+	// 위젯 출력
 	if (IsLocallyControlled() && HUDWidgetClass) {
 		HUDWidget = CreateWidget<ULuinHUDWidget>(GetWorld(), HUDWidgetClass);
 		if (HUDWidget) {
 			HUDWidget->AddToViewport();
 			HUDWidget->BindToAttribte(AbilitySystemComponent);
 		}
+	}
+
+	// 스태미너의 변경을 델리게이트로 체크
+	if (AbilitySystemComponent) {
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+			ULuinAttributeSet::GetStaminaAttribute()).AddUObject(this, &ALuinPlayer::OnStaminaChanged);
 	}
 }
 
@@ -164,6 +172,12 @@ void ALuinPlayer::ToggleLockOn()
 void ALuinPlayer::Input_Attack(const FInputActionValue& Value)
 {
 	if (AbilitySystemComponent) {
+		// 달리던 도중 공격을 시도하면 달리기를 멈춤.
+		// 어차피 모션 워프로 접근하게 되므로 이 로직이 상식적.
+		if (GetCharacterMovement()->MaxWalkSpeed > WalkSpeed) {
+			SprintStop();
+		}
+
 		UpdateMotionWarpTarget();
 		AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(ELuinAbilityInputID::Attack));
 	}
@@ -215,10 +229,22 @@ void ALuinPlayer::Input_Look(const FInputActionValue& Value)
 	}
 }
 
-// 스프린트 시작 및 종료 시 Sprint INputID 를 사용하는 GA 실행
+// 스프린트 시작 및 종료 시 Sprint InputID 를 사용하는 GA 실행
 void ALuinPlayer::SprintStart()
 {
 	if (AbilitySystemComponent) {
+		float CurrentStamina = AbilitySystemComponent->GetNumericAttribute(ULuinAttributeSet::GetStaminaAttribute());
+
+		// 스태미너가 부족하다면 달릴 수 없음.
+		if (CurrentStamina <= 2.0f) {
+			return;
+		}
+
+		// 공격 중이라면 달릴 수 없음.
+		if (AttackTag.IsValid() && AbilitySystemComponent->HasMatchingGameplayTag(AttackTag)) {
+			return;
+		}
+
 		AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(ELuinAbilityInputID::Sprint));
 		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 	}
@@ -229,6 +255,14 @@ void ALuinPlayer::SprintStop()
 	if (AbilitySystemComponent) {
 		AbilitySystemComponent->AbilityLocalInputReleased(static_cast<int32>(ELuinAbilityInputID::Sprint));
 		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	}
+}
+
+void ALuinPlayer::OnStaminaChanged(const FOnAttributeChangeData& Data)
+{
+	// 스태미너 변경 시 현재 달릴 수 있는 상태인지 계속 검사하고, 안된다면 SprintStop 강제 실행
+	if (Data.NewValue <= 2.0f && GetCharacterMovement()->MaxWalkSpeed > WalkSpeed) {
+		SprintStop();
 	}
 }
 

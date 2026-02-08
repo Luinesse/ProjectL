@@ -6,6 +6,7 @@
 #include "LuinCharacterBase.h"
 // Enhanced Input 처리용
 #include "InputActionValue.h"
+#include "GameplayTagContainer.h"
 #include "LuinPlayer.generated.h"
 
 /**
@@ -22,6 +23,9 @@ class UCameraComponent;
 class UMotionWarpingComponent;
 // UI
 class ULuinHUDWidget;
+
+// 델리게이트. (속성 변경 시 호출)
+struct FOnAttributeChangeData;
 
 UCLASS()
 class PROJECTL_API ALuinPlayer : public ALuinCharacterBase
@@ -69,6 +73,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float SprintSpeed = 600.0f;
 
+	UPROPERTY(EditDefaultsOnly, Category = "GAS")
+	FGameplayTag AttackTag;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	AActor* CurrentTargetActor;
 
@@ -94,6 +101,9 @@ protected:
 
 	void SprintStart();
 	void SprintStop();
+
+	// 스태미나 변경 시 호출되는 콜백함수
+	void OnStaminaChanged(const FOnAttributeChangeData& Data);
 
 	// 락온 대상 찾기
 	AActor* FindLockOnTarget(float SearchRange = 1000.0f);
