@@ -73,6 +73,11 @@ public:
 	FGameplayAttributeData AttackPower;
 	ATTRIBUTE_ACCESSORS(ULuinAttributeSet, AttackPower);
 
+	// 이동속도
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MovementSpeed, Category = "Attributes")
+	FGameplayAttributeData MovementSpeed;
+	ATTRIBUTE_ACCESSORS(ULuinAttributeSet, MovementSpeed);
+
 protected:
 	// ReplicatedUsing 옵션으로 인해 값이 네트워크를 타고 갱신됐을 때 호출되는 콜백 함수
 	UFUNCTION()
@@ -95,4 +100,7 @@ protected:
 
 	UFUNCTION()
 	void OnRep_AttackPower(const FGameplayAttributeData& OldAttackPower);
+
+	UFUNCTION()
+	void OnRep_MovementSpeed(const FGameplayAttributeData& OldMovementSpeed);
 };

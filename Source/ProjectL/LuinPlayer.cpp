@@ -30,7 +30,7 @@ ALuinPlayer::ALuinPlayer()
 	MotionWarpingComp = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarpingComp"));
 
 	// 기본 이동속도 설정
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	//GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
 	// 모험 모드로 설정 (UseControllerRotationYaw 사용 X -> 카메라 회전이 마우스를 따라가지 않음.)
 	bUseControllerRotationPitch = false;
@@ -73,6 +73,12 @@ void ALuinPlayer::BeginPlay()
 	if (AbilitySystemComponent) {
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 			ULuinAttributeSet::GetStaminaAttribute()).AddUObject(this, &ALuinPlayer::OnStaminaChanged);
+
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+			ULuinAttributeSet::GetMovementSpeedAttribute()).AddUObject(this, &ALuinPlayer::OnSpeedChanged);
+
+		GetCharacterMovement()->MaxWalkSpeed = AbilitySystemComponent->GetNumericAttribute(ULuinAttributeSet::GetMovementSpeedAttribute());
+		WalkSpeed = AbilitySystemComponent->GetNumericAttribute(ULuinAttributeSet::GetMovementSpeedAttribute());
 	}
 }
 
@@ -152,7 +158,6 @@ void ALuinPlayer::ToggleLockOn()
 
 		bUseControllerRotationYaw = false;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
 	else {
 		// 락온 대상 찾기
@@ -164,7 +169,6 @@ void ALuinPlayer::ToggleLockOn()
 
 			bUseControllerRotationYaw = true;
 			GetCharacterMovement()->bOrientRotationToMovement = false;
-			GetCharacterMovement()->MaxWalkSpeed = 250.0f;
 		}
 	}
 }
@@ -240,13 +244,9 @@ void ALuinPlayer::SprintStart()
 			return;
 		}
 
-		// 공격 중이라면 달릴 수 없음.
-		if (AttackTag.IsValid() && AbilitySystemComponent->HasMatchingGameplayTag(AttackTag)) {
-			return;
-		}
+		// 공격 검사 삭제 (2026.02.09 - 에디터에서 활성화 소유 태그, 활성화 차단 태그로 관리중)
 
 		AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(ELuinAbilityInputID::Sprint));
-		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 	}
 }
 
@@ -254,7 +254,6 @@ void ALuinPlayer::SprintStop()
 {
 	if (AbilitySystemComponent) {
 		AbilitySystemComponent->AbilityLocalInputReleased(static_cast<int32>(ELuinAbilityInputID::Sprint));
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
 }
 
@@ -264,6 +263,11 @@ void ALuinPlayer::OnStaminaChanged(const FOnAttributeChangeData& Data)
 	if (Data.NewValue <= 2.0f && GetCharacterMovement()->MaxWalkSpeed > WalkSpeed) {
 		SprintStop();
 	}
+}
+
+void ALuinPlayer::OnSpeedChanged(const FOnAttributeChangeData& Data)
+{
+	GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
 }
 
 AActor* ALuinPlayer::FindLockOnTarget(float SearchRange)

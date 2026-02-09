@@ -6,6 +6,7 @@
 #include "LuinCharacterBase.h"
 // Enhanced Input 처리용
 #include "InputActionValue.h"
+// GameplayTag 를 사용하기 위한 헤더
 #include "GameplayTagContainer.h"
 #include "LuinPlayer.generated.h"
 
@@ -70,9 +71,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float WalkSpeed = 300.0f;
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	float SprintSpeed = 600.0f;
-
+	// 공격 시 부여되는 이벤트 태그
 	UPROPERTY(EditDefaultsOnly, Category = "GAS")
 	FGameplayTag AttackTag;
 
@@ -104,6 +103,9 @@ protected:
 
 	// 스태미나 변경 시 호출되는 콜백함수
 	void OnStaminaChanged(const FOnAttributeChangeData& Data);
+
+	// 이동속도 변경 시 호출되는 콜백함수
+	void OnSpeedChanged(const FOnAttributeChangeData& Data);
 
 	// 락온 대상 찾기
 	AActor* FindLockOnTarget(float SearchRange = 1000.0f);

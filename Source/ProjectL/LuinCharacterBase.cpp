@@ -59,6 +59,7 @@ void ALuinCharacterBase::BeginPlay()
 			AttributeSet->InitStamina(100.0f);
 			AttributeSet->InitMaxStamina(100.0f);
 			AttributeSet->InitAttackPower(10.0f);
+			AttributeSet->InitMovementSpeed(300.0f);
 
 			AttributeSet->OnOutOfHealth.AddUObject(this, &ALuinCharacterBase::Die);
 
