@@ -20,6 +20,7 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player")
 	ALuinCharacterBase* GetCharacterBase() const;
 
+	// 자신에게 GE 부여
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	FActiveGameplayEffectHandle ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float level = 1.0f);
 };

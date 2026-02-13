@@ -55,6 +55,11 @@ void ULuinAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 			OnOutOfHealth.Broadcast(DamageCauser);
 		}
 	}
+
+	// 스태미너가 변경 됐을 때, 최대값을 넘지않도록 클램핑
+	if (Data.EvaluatedData.Attribute == GetStaminaAttribute()) {
+		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));
+	}
 }
 
 void ULuinAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth)

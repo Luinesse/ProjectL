@@ -69,7 +69,18 @@ void ALuinPlayer::BeginPlay()
 		}
 	}
 
-	// 스태미너의 변경을 델리게이트로 체크
+	// 스태미너 리젠 GE 적용
+	if (HasAuthority() && StaminaRegenEffect) {
+		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+		EffectContext.AddSourceObject(this);
+
+		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(StaminaRegenEffect, 1.0f, EffectContext);
+		if (SpecHandle.IsValid()) {
+			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		}
+	}
+
+	// 스태미너와 이동속도의 변경을 델리게이트로 체크
 	if (AbilitySystemComponent) {
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 			ULuinAttributeSet::GetStaminaAttribute()).AddUObject(this, &ALuinPlayer::OnStaminaChanged);

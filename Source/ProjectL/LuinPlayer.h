@@ -6,8 +6,6 @@
 #include "LuinCharacterBase.h"
 // Enhanced Input 처리용
 #include "InputActionValue.h"
-// GameplayTag 를 사용하기 위한 헤더
-#include "GameplayTagContainer.h"
 #include "LuinPlayer.generated.h"
 
 /**
@@ -71,10 +69,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float WalkSpeed = 300.0f;
 
-	// 공격 시 부여되는 이벤트 태그
-	UPROPERTY(EditDefaultsOnly, Category = "GAS")
-	FGameplayTag AttackTag;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	AActor* CurrentTargetActor;
 
@@ -87,6 +81,10 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<ULuinHUDWidget> HUDWidget;
+
+	// 스태미너 리젠
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<UGameplayEffect> StaminaRegenEffect;
 
 	// 수동 락온
 	void ToggleLockOn();
