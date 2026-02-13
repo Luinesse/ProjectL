@@ -22,7 +22,8 @@ enum class ELuinAbilityInputID : uint8 {
 	Confirm,
 	Cancel,
 	Attack,
-	Sprint
+	Sprint,
+	Skill
 };
 
 // GA가 어떤 타입인지 확인하기 위한 구조체

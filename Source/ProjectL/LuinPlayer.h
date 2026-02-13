@@ -65,6 +65,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> LockOnAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> SkillAction;
+
 	// Speed
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float WalkSpeed = 300.0f;
@@ -98,6 +101,8 @@ protected:
 
 	void SprintStart();
 	void SprintStop();
+
+	void Input_Skill(const FInputActionValue& Value);
 
 	// 스태미나 변경 시 호출되는 콜백함수
 	void OnStaminaChanged(const FOnAttributeChangeData& Data);

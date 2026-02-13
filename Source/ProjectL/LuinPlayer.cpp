@@ -268,6 +268,13 @@ void ALuinPlayer::SprintStop()
 	}
 }
 
+void ALuinPlayer::Input_Skill(const FInputActionValue& Value)
+{
+	if (AbilitySystemComponent) {
+		AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(ELuinAbilityInputID::Skill));
+	}
+}
+
 void ALuinPlayer::OnStaminaChanged(const FOnAttributeChangeData& Data)
 {
 	// 스태미너 변경 시 현재 달릴 수 있는 상태인지 계속 검사하고, 안된다면 SprintStop 강제 실행
@@ -435,6 +442,10 @@ void ALuinPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 		if (LockOnAction) {
 			EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &ALuinPlayer::ToggleLockOn);
+		}
+
+		if (SkillAction) {
+			EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &ALuinPlayer::Input_Skill);
 		}
 	}
 }
