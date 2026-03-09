@@ -207,6 +207,14 @@ void ALuinPlayer::Input_AttackReleased(const FInputActionValue& Value)
 
 void ALuinPlayer::Input_Move(const FInputActionValue& Value)
 {
+	if (AbilitySystemComponent) {
+		FGameplayTag SkillTag = FGameplayTag::RequestGameplayTag(FName("Status.Skill"));
+
+		if (AbilitySystemComponent->HasMatchingGameplayTag(SkillTag)) {
+			return;
+		}
+	}
+
 	// 입력값 (x, y) 가져오기
 	FVector2D MovementVector = Value.Get<FVector2D>();
 

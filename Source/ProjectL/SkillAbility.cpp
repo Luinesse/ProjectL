@@ -9,6 +9,7 @@
 
 USkillAbility::USkillAbility()
 {
+	// CurrentTargetIndex 를 액터 별로 가지게 하여 변수 공유 방지
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	CurrentTargetIndex = 0;
 }
@@ -17,6 +18,11 @@ void USkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo)) {
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
 	ALuinCharacterBase* Character = GetCharacterBase();
 
 	if (!Character) {
@@ -24,6 +30,7 @@ void USkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 	}
 
+	// 스킬을 시작한 현재 위치 저장 및 사거리 내 적 탐색 및 저장
 	StartPos = Character->GetActorLocation();
 	TargetActors = Character->GetEnemiesInAttackRange(1000.0f, 1000.0f);
 
@@ -32,15 +39,21 @@ void USkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 	}
 
+	// 글로벌 시간을 0.2배로 변경
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.2f);
+
+	// 플레이어는 정상속도로 움직이게 연출해야하므로, 5배 연출. (0.2 * 5 = 1.0)
 	Character->CustomTimeDilation = 5.0f;
 
+	// 시작은 배열의 첫번째 타겟부터
 	CurrentTargetIndex = 0;
+	// 공격 시작
 	NextAttack();
 }
 
 void USkillAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	// GA 종료시 글로벌 시간과 플레이어 시간을 원래대로 돌려둠.
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 	if (ALuinCharacterBase* Character = GetCharacterBase())
 	{
@@ -52,23 +65,29 @@ void USkillAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 
 void USkillAbility::NextAttack()
 {
+	// 스킬 종료 조건
 	if (CurrentTargetIndex == TargetActors.Num()) {
+		// 스킬 종료 시 수행할 함수
 		FinishAttack();
 		return;
 	}
 
+	// 현재 타겟을 가져옴
 	AActor* Target = TargetActors[CurrentTargetIndex];
 	ALuinCharacterBase* Character = GetCharacterBase();
 
 	if (Target && Character) {
+		// 타겟의 앞으로 모션 워핑
 		UMotionWarpingComponent* MotionWarpComp = Character->FindComponentByClass<UMotionWarpingComponent>();
 		if (MotionWarpComp) {
 			FVector WarpPos = GetAttackWarpLocation(Target);
 			FRotator WarpRot = (Target->GetActorLocation() - WarpPos).Rotation();
 
+			// AttackTarget 과는 다른 모션 워프 이름을 사용하여 공격과는 무관하게 워프하도록 설정.
 			MotionWarpComp->AddOrUpdateWarpTargetFromLocationAndRotation(FName("SkillTarget"), WarpPos, WarpRot);
 		}
 
+		// 몽타주 실행
 		UAbilityTask_PlayMontageAndWait* Task = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 			this,
 			NAME_None,
@@ -78,6 +97,7 @@ void USkillAbility::NextAttack()
 			false
 		);
 
+		// 몽타주 종료 시 콜백함수 등록
 		if (Task) {
 			Task->OnBlendOut.AddDynamic(this, &USkillAbility::OnAttackMontageEnded);
 			Task->OnInterrupted.AddDynamic(this, &USkillAbility::OnAttackMontageEnded);
@@ -85,6 +105,7 @@ void USkillAbility::NextAttack()
 		}
 	}
 	else {
+		// 타겟이 없거나 캐릭터를 가져오는데 실패했으면 바로 몽타주 종료
 		OnAttackMontageEnded();
 	}
 }
@@ -93,12 +114,15 @@ void USkillAbility::FinishAttack()
 {
 	ALuinCharacterBase* Character = GetCharacterBase();
 	if (Character) {
+		// 공격이 끝났으니 원래위치로 돌아옴
 		Character->SetActorLocation(StartPos);
 
+		// 글로벌 시간, 플레이어 시간 정상화
 		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 		Character->CustomTimeDilation = 1.0f;
 
 		if (FinishMontage) {
+			// 스킬 종료 몽타주 실행
 			UAbilityTask_PlayMontageAndWait* Task = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 				this,
 				NAME_None,
@@ -108,6 +132,7 @@ void USkillAbility::FinishAttack()
 				false
 			);
 
+			// 몽타주 종료 콜백함수 등록
 			if (Task) {
 				Task->OnBlendOut.AddDynamic(this, &USkillAbility::OnFinishMontageEnded);
 				Task->ReadyForActivation();
@@ -121,6 +146,7 @@ void USkillAbility::FinishAttack()
 
 void USkillAbility::ApplyDamageToTargets()
 {
+	// 타겟이 존재하고 GE를 정상적으로 가져왔다면 모든 타겟에게 GE적용
 	if (TargetActors.Num() > 0 && KillDamageEffect) {
 		ApplyGameplayEffectToTarget(TargetActors, KillDamageEffect, 1.0f);
 	}
@@ -128,18 +154,29 @@ void USkillAbility::ApplyDamageToTargets()
 
 void USkillAbility::OnAttackMontageEnded()
 {
+	// 공격 몽타주 종료 시 다음 타겟으로 넘어가기 위해 CurrentTargetIndex 증가 및 NextAttack 호출 (콜백 함수를 통한 루프. CurrentTargetIndex 값에 따른 탈출)
 	CurrentTargetIndex++;
 	NextAttack();
 }
 
 void USkillAbility::OnFinishMontageEnded()
 {
+	// 스킬 종료 몽타주 종료 시 모든 적에게 GE적용 및 GA 종료
 	ApplyDamageToTargets();
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
 
 FVector USkillAbility::GetAttackWarpLocation(AActor* Target, float Dist)
 {
+	// 모션워프할 위치 리턴
 	if (!Target) return FVector::ZeroVector;
-	return Target->GetActorLocation() + (Target->GetActorForwardVector() * Dist);
+
+	FVector TargetLoc = Target->GetActorLocation();
+
+	float RandomAngle = FMath::RandRange(0.0f, 360.0f);
+
+	FVector Offset = FVector(Dist, 0.0f, 0.0f);
+	Offset = Offset.RotateAngleAxis(RandomAngle, FVector::UpVector);
+
+	return TargetLoc + Offset;
 }
