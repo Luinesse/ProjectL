@@ -69,12 +69,12 @@ void ALuinPlayer::BeginPlay()
 		}
 	}
 
-	// 스태미너 리젠 GE 적용
-	if (HasAuthority() && StaminaRegenEffect) {
+	// 속성 리젠 GE 적용
+	if (HasAuthority() && BaseRegenEffect) {
 		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
 		EffectContext.AddSourceObject(this);
 
-		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(StaminaRegenEffect, 1.0f, EffectContext);
+		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(BaseRegenEffect, 1.0f, EffectContext);
 		if (SpecHandle.IsValid()) {
 			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 		}
@@ -208,8 +208,10 @@ void ALuinPlayer::Input_AttackReleased(const FInputActionValue& Value)
 void ALuinPlayer::Input_Move(const FInputActionValue& Value)
 {
 	if (AbilitySystemComponent) {
+		// 태그 검사
 		FGameplayTag SkillTag = FGameplayTag::RequestGameplayTag(FName("Status.Skill"));
 
+		// 태그가 존재한다면 리턴
 		if (AbilitySystemComponent->HasMatchingGameplayTag(SkillTag)) {
 			return;
 		}

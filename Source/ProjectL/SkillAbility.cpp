@@ -30,8 +30,9 @@ void USkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 	}
 
-	// 스킬을 시작한 현재 위치 저장 및 사거리 내 적 탐색 및 저장
+	// 스킬을 시작한 현재 위치 및 방향 저장 및 사거리 내 적 탐색 및 저장
 	StartPos = Character->GetActorLocation();
+	StartRot = Character->GetActorRotation();
 	TargetActors = Character->GetEnemiesInAttackRange(1000.0f, 1000.0f);
 
 	if (TargetActors.Num() == 0) {
@@ -114,8 +115,8 @@ void USkillAbility::FinishAttack()
 {
 	ALuinCharacterBase* Character = GetCharacterBase();
 	if (Character) {
-		// 공격이 끝났으니 원래위치로 돌아옴
-		Character->SetActorLocation(StartPos);
+		// 공격이 끝났으니 원래위치로 돌아옴. 방향또한 처음 방향으로 세팅
+		Character->SetActorLocationAndRotation(StartPos, StartRot);
 
 		// 글로벌 시간, 플레이어 시간 정상화
 		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
@@ -171,12 +172,17 @@ FVector USkillAbility::GetAttackWarpLocation(AActor* Target, float Dist)
 	// 모션워프할 위치 리턴
 	if (!Target) return FVector::ZeroVector;
 
+	// 현재 타겟의 위치
 	FVector TargetLoc = Target->GetActorLocation();
 
+	// 타겟을 중심으로 360도 중 한 곳으로 순간이동 할 예정이니까.
 	float RandomAngle = FMath::RandRange(0.0f, 360.0f);
 
+	// 타겟을 중심으로 Dist 만큼 떨어질 것.
 	FVector Offset = FVector(Dist, 0.0f, 0.0f);
+	// 어느 방향으로 Dist만큼 떨어질 것인가 ? 앞서 구한 360도 중 뽑힌 하나의 각도로 회전. 이때 축은 업벡터(Z)
 	Offset = Offset.RotateAngleAxis(RandomAngle, FVector::UpVector);
 
+	// 최종적으로 타겟을 중심으로 Dist만큼 RandomAngle 방향으로 모션워프함.
 	return TargetLoc + Offset;
 }

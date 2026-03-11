@@ -55,6 +55,9 @@ private:
 	// 다시 돌아갈 위치
 	FVector StartPos;
 
+	// 돌아갔을 때 방향
+	FRotator StartRot;
+
 	// 스킬 몽타주
 	UPROPERTY(EditDefaultsOnly, Category = "Skill")
 	TObjectPtr<UAnimMontage> SkillMontage;

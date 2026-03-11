@@ -57,8 +57,13 @@ void ULuinAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	}
 
 	// 스태미너가 변경 됐을 때, 최대값을 넘지않도록 클램핑
-	if (Data.EvaluatedData.Attribute == GetStaminaAttribute()) {
+	else if (Data.EvaluatedData.Attribute == GetStaminaAttribute()) {
 		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));
+	}
+
+	// 마나가 변경 됐을 때, 최대값을 넘지않도록 클램핑
+	else if (Data.EvaluatedData.Attribute == GetManaAttribute()) {
+		SetMana(FMath::Clamp(GetMana(), 0.0f, GetMaxMana()));
 	}
 }
 

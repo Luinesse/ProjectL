@@ -85,9 +85,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ULuinHUDWidget> HUDWidget;
 
-	// 스태미너 리젠
+	// 스태미너, 체력, 마나 리젠
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<UGameplayEffect> StaminaRegenEffect;
+	TSubclassOf<UGameplayEffect> BaseRegenEffect;
 
 	// 수동 락온
 	void ToggleLockOn();
