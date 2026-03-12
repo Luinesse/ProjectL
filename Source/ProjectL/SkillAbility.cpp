@@ -40,11 +40,11 @@ void USkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 	}
 
-	// 글로벌 시간을 0.2배로 변경
-	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.2f);
+	// 글로벌 시간을 0.5배로 변경
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.5f);
 
-	// 플레이어는 정상속도로 움직이게 연출해야하므로, 5배 연출. (0.2 * 5 = 1.0)
-	Character->CustomTimeDilation = 5.0f;
+	// 플레이어는 정상속도로 움직이게 연출해야하므로, 2배 연출. (0.5 * 2 = 1.0)
+	Character->CustomTimeDilation = 2.0f;
 
 	// 시작은 배열의 첫번째 타겟부터
 	CurrentTargetIndex = 0;
@@ -118,10 +118,6 @@ void USkillAbility::FinishAttack()
 		// 공격이 끝났으니 원래위치로 돌아옴. 방향또한 처음 방향으로 세팅
 		Character->SetActorLocationAndRotation(StartPos, StartRot);
 
-		// 글로벌 시간, 플레이어 시간 정상화
-		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
-		Character->CustomTimeDilation = 1.0f;
-
 		if (FinishMontage) {
 			// 스킬 종료 몽타주 실행
 			UAbilityTask_PlayMontageAndWait* Task = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
@@ -164,6 +160,14 @@ void USkillAbility::OnFinishMontageEnded()
 {
 	// 스킬 종료 몽타주 종료 시 모든 적에게 GE적용 및 GA 종료
 	ApplyDamageToTargets();
+
+	ALuinCharacterBase* Character = GetCharacterBase();
+	if (Character) {
+		// 글로벌 시간, 플레이어 시간 정상화
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+		Character->CustomTimeDilation = 1.0f;
+	}
+
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
 
