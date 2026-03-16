@@ -95,6 +95,9 @@ public:
 	// 실제 사망 처리 함수
 	virtual void Die(AActor* DamageCauser);
 
+	// 가상 함수로 처리하여, GA에서 LuinCharacterBase를 가져와 함수 호출 시 자식클래스의 함수로 자동 실행하게끔 구현
+	virtual void SetCameraLagSpeed(float NewSpeed) {};
+
 	// 공격 판정 함수.
 	// AttackRange = 사거리
 	// AttackRadius = 공격 반지름 (Sphere Trace 사용하므로)

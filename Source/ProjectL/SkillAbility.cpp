@@ -30,6 +30,11 @@ void USkillAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 	}
 
+	// 카메라 지연 속도를 매우 낮은값으로 설정하여 스킬 도중에는 카메라가 따라오지 않도록함.
+	// 0.0f 로 설정시 카메라 지연 기능 자체가 꺼져버려 적용안되는 버그확인.
+	// 따라서 0.01f 로 설정
+	Character->SetCameraLagSpeed(0.01f);
+
 	// 스킬을 시작한 현재 위치 및 방향 저장 및 사거리 내 적 탐색 및 저장
 	StartPos = Character->GetActorLocation();
 	StartRot = Character->GetActorRotation();
@@ -117,6 +122,8 @@ void USkillAbility::FinishAttack()
 	if (Character) {
 		// 공격이 끝났으니 원래위치로 돌아옴. 방향또한 처음 방향으로 세팅
 		Character->SetActorLocationAndRotation(StartPos, StartRot);
+		// 공격이 끝나면 카메라 지연을 원상태로 복귀
+		Character->SetCameraLagSpeed(10.0f);
 
 		if (FinishMontage) {
 			// 스킬 종료 몽타주 실행

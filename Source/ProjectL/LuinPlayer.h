@@ -115,6 +115,9 @@ protected:
 
 	virtual void Die(AActor* DamageCauser) override;
 
+	// 카메라 지연 속도 반영
+	virtual void SetCameraLagSpeed(float NewSpeed) override;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

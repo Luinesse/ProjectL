@@ -2,6 +2,7 @@
 
 
 #include "LuinEnemy.h"
+#include "Components/CapsuleComponent.h"
 
 ALuinEnemy::ALuinEnemy()
 {
@@ -14,4 +15,8 @@ void ALuinEnemy::Die(AActor* DamageCauser)
 	Super::Die(DamageCauser);
 
 	// 적 캐릭터의 사망 처리가 들어갈 영역
+
+	// AIC 빙의해제
+	DetachFromControllerPendingDestroy();
+
 }

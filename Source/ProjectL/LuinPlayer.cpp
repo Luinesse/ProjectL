@@ -370,6 +370,15 @@ void ALuinPlayer::Die(AActor* DamageCauser)
 	// 플레이어 캐릭터의 사망 처리가 들어갈 영역.
 }
 
+void ALuinPlayer::SetCameraLagSpeed(float NewSpeed)
+{
+	// 카메라 지연 속도 반영
+	if (CameraBoom) {
+		CameraBoom->bEnableCameraLag = true;
+		CameraBoom->CameraLagSpeed = NewSpeed;
+	}
+}
+
 void ALuinPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
