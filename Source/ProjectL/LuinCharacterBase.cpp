@@ -226,6 +226,17 @@ TArray<AActor*> ALuinCharacterBase::GetEnemiesInAttackRange(float AttackRange, f
 	return HitActors;
 }
 
+UAnimMontage* ALuinCharacterBase::GetAttackMontage() const
+{
+	if (AttackMontage.IsEmpty()) {
+		return nullptr;
+	}
+
+	int32 RandIdx = FMath::RandRange(0, AttackMontage.Num() - 1);
+
+	return AttackMontage[RandIdx];
+}
+
 bool ALuinCharacterBase::IsHostile(AActor* TargetActor) const
 {
 	if (!TargetActor)	return false;

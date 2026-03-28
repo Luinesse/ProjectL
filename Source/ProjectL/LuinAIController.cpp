@@ -22,6 +22,9 @@ ALuinAIController::ALuinAIController()
 	SightConfig->LoseSightRadius = 1200.0f;
 	SightConfig->PeripheralVisionAngleDegrees = 90.0f;
 
+	// 수명 설정
+	SightConfig->SetMaxAge(5.0f);
+
 	// 적과 중립과 아군 모두 인식하도록함.
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;

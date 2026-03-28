@@ -80,7 +80,7 @@ protected:
 
 	// 공격 몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UAnimMontage> AttackMontage;
+	TArray<TObjectPtr<UAnimMontage>> AttackMontage;
 
 	// 블루프린트에서 구현될 디졸브 함수.
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
@@ -106,7 +106,7 @@ public:
 
 	// 블루프린트에서 호출할 몽타주 게터
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	inline UAnimMontage* GetAttackMontage() const { return AttackMontage; }
+	UAnimMontage* GetAttackMontage() const;
 
 	// 사망 정보 게터
 	UFUNCTION(BlueprintCallable, BlueprintPure)
