@@ -4,6 +4,10 @@
 #include "LuinAIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISenseConfig_Hearing.h"
+#include "Perception/AISenseConfig_Damage.h"
+#include "Perception/AISense_Damage.h"
+#include "Perception/AISense_Sight.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 ALuinAIController::ALuinAIController()
@@ -32,6 +36,29 @@ ALuinAIController::ALuinAIController()
 
 	// 생성한 시야 감각을 퍼셉션에 등록
 	AIPerceptionComponent->ConfigureSense(*SightConfig);
+
+	// 청각 세팅
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("HearingConfig"));
+
+	// 3000의 거리까지 들음. 시야 확보 시 3500까지 들음.
+	HearingConfig->HearingRange = 3000.0f;
+	HearingConfig->LoSHearingRange = 3500.0f;
+
+	// 적, 중립, 아군 모두 인식
+	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
+	// 퍼셉션에 등록
+	AIPerceptionComponent->ConfigureSense(*HearingConfig);
+
+	// 통각 생성 (맞게되면 바로 인식됨. 별도의 세팅X)
+	DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("DamageConfig"));
+
+	// 퍼셉션에 등록
+	AIPerceptionComponent->ConfigureSense(*DamageConfig);
+
+	// 주 감각을 시각으로 등록
 	AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
@@ -61,6 +88,15 @@ void ALuinAIController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		if (Stimulus.WasSuccessfullySensed()) {
 			UE_LOG(LogTemp, Warning, TEXT("Find Player"));
 
+			FAISenseID SenseID = Stimulus.Type;
+
+			if (SenseID == UAISense::GetSenseID<UAISense_Damage>()) {
+				UE_LOG(LogTemp, Warning, TEXT("Damage !"));
+			}
+			else if (SenseID == UAISense::GetSenseID<UAISense_Sight>()) {
+				UE_LOG(LogTemp, Warning, TEXT("Sight !"));
+			}
+
 			// 블랙보드의 TargetActor를 업데이트된 대상으로 설정
 			if (GetBlackboardComponent()) {
 				GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), Actor);
@@ -70,9 +106,11 @@ void ALuinAIController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 			UE_LOG(LogTemp, Warning, TEXT("Lose Player"));
 
 			// 시야에서 사라졌을 때이므로, TargetActor의 값을 초기화
-			if (GetBlackboardComponent()) {
+			// 시야에서 사라지자마자 ClearValue 하면 SetMaxAge 함수가 의미없어짐.
+			// 따라서, 일단 주석처리로 없애고 실행.
+			/*if (GetBlackboardComponent()) {
 				GetBlackboardComponent()->ClearValue(FName("TargetActor"));
-			}
+			}*/
 		}
 	}
 }

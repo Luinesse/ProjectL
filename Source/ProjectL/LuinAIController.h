@@ -13,6 +13,8 @@
 
 class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
+class UAISenseConfig_Hearing;
+class UAISenseConfig_Damage;
 class UBehaviorTree;
 
 UCLASS()
@@ -34,8 +36,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	UAIPerceptionComponent* AIPerceptionComponent;
 
-	// 시야 감각
+	// 시각
 	UAISenseConfig_Sight* SightConfig;
+
+	// 청각
+	UAISenseConfig_Hearing* HearingConfig;
+
+	// 통각
+	UAISenseConfig_Damage* DamageConfig;
 
 	// 퍼셉션 업데이트 시 호출될 콜백함수 (현재는 시야뿐이므로 시야에 들어오거나 시야에서 사라졌을 때)
 	UFUNCTION()

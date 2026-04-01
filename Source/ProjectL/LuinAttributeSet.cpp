@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayEffectExtension.h"
+#include "Perception/AISense_Damage.h"
 
 ULuinAttributeSet::ULuinAttributeSet()
 {
@@ -46,13 +47,20 @@ void ULuinAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	// 현재 바뀐 속성이 체력 속성이 맞는지 ?
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute()) {
+		AActor* DamageCauser = Data.EffectSpec.GetContext().GetEffectCauser();
+		AActor* TargetActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
 		// 체력 클램핑
 		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
 		// 죽었다면 ?
-		if (GetHealth() <= 0.0f) {
-			AActor* DamageCauser = Data.EffectSpec.GetContext().GetEffectCauser();
+		if (GetHealth() <= 0.0f && DamageCauser) {
 			// 브로드캐스트
 			OnOutOfHealth.Broadcast(DamageCauser);
+		}
+		if (DamageCauser && TargetActor) {
+			if (TargetActor->ActorHasTag(FName("Enemy"))) {
+				float DamageAmount = FMath::Abs(Data.EvaluatedData.Magnitude);
+				UAISense_Damage::ReportDamageEvent(TargetActor, TargetActor, DamageCauser, DamageAmount, TargetActor->GetActorLocation(), DamageCauser->GetActorLocation());
+			}
 		}
 	}
 
