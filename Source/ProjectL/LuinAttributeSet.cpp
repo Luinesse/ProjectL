@@ -58,6 +58,9 @@ void ULuinAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 		}
 		if (DamageCauser && TargetActor) {
 			if (TargetActor->ActorHasTag(FName("Enemy"))) {
+				// GE에 의해 연산된 값.
+				// 가령 GE에서 -10으로 체력이 더해진다면 Magnitude는 -10.
+				// 데미지의 양은 양수로 처리(어느만큼의 충격을 받았는가 이므로)
 				float DamageAmount = FMath::Abs(Data.EvaluatedData.Magnitude);
 				UAISense_Damage::ReportDamageEvent(TargetActor, TargetActor, DamageCauser, DamageAmount, TargetActor->GetActorLocation(), DamageCauser->GetActorLocation());
 			}
